@@ -2,6 +2,7 @@ import { Controller, Post, Body, Get } from '@nestjs/common';
 import { UserService } from './user.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { User } from './entities/user.entity';
+import { LoginUserDto } from './dto/login-user.dto';
 
 
 @Controller('user')
@@ -10,6 +11,7 @@ export class UserController {
   constructor(
     private readonly userService: UserService) {
   }
+
 
   @Get()
   findAll(): Promise<User[]> {
@@ -21,6 +23,16 @@ export class UserController {
   // 使用接收body数据  ,数据必须符合registerUserDto的结构
   create(@Body() registerUserDto: RegisterUserDto) {
 
-    return this.userService.create(registerUserDto)
+    return this.userService.create(registerUserDto);
+  }
+
+
+  // 登录
+
+
+  @Post('login')
+  login(@Body() loginUserDto: LoginUserDto) {
+
+    return this.userService.login(loginUserDto);
   }
 }
