@@ -60,6 +60,8 @@ $ npm run test:cov
 
 ## 5.28
 - user module 
+- mysql
+- typeorm
 
 ## 5.29 
 

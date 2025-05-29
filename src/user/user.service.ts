@@ -1,9 +1,12 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+
+// 信息加密包
+import * as bcrypt from 'bcrypt';
 
 
 @Injectable()
@@ -49,7 +52,10 @@ export class UserService {
     const user = new User();
     // 这里不用搞id,因为在实体里,id是自增量的主键
     user.username = registerUserDto.username;
-    user.password = registerUserDto.password;
+    // user.password = registerUserDto.password;
+
+    // 重新加密密码
+    user.password = await bcrypt.hash(registerUserDto.password, 10);
 
     // 写入数据库
     await this.userRepository.save(user);
@@ -75,11 +81,20 @@ export class UserService {
       throw new HttpException(`用户不存在`, HttpStatus.NOT_FOUND);
     }
 
+
     // 校验密码
-    const isPasswordValid = user.password === loginUserDto.password;
-    if (!isPasswordValid) {
+    // const isPasswordValid = user.password === loginUserDto.password;
+    // if (!isPasswordValid) {
+    //   throw new HttpException(`密码错误`, HttpStatus.UNAUTHORIZED);
+    // }
+
+    // 解密密码,并且自动和login的密码校验了
+    const bcryptPassWord = await bcrypt.compare(loginUserDto.password, user.password);
+
+    if (!bcryptPassWord) {
       throw new HttpException(`密码错误`, HttpStatus.UNAUTHORIZED);
     }
+
 
     return {
       status: HttpStatus.OK,
